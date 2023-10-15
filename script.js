@@ -1,6 +1,6 @@
-let images = [null, null, null, null, null];
+let images = [null, null, null, null, null, null];
 const transparencyThreshold = 128;
-const numOfStreams = 900;
+const numOfStreams = 2500;
 let imgCenter; 
 let pointImageOverlapCache = {};  
 let circleDiameter;
@@ -10,7 +10,7 @@ function preload() {
     circleDiameter = Math.min(windowWidth, windowHeight);
     let desiredImageHeight = circleDiameter * 2;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
         loadImage(`images/image${i + 1}.png`, img => {
             let scaleFactor = desiredImageHeight / img.height;
             img.resize(img.width * scaleFactor, img.height * scaleFactor);
@@ -46,16 +46,18 @@ function setup() {
     background(135, 206, 235);
 
     const colors = [
-        [0, 96, 0],
-        [96, 216, 0],
-        [255, 253, 208],
-        [145, 56, 49],
-        [53, 57, 53]
+        [79, 121, 66],
+        [249, 246, 238],
+        [27, 18, 18],
+        [255, 219, 172],
+        [255, 219, 172],
+        [222, 49, 99]
     ];
-    const percentages = [0.6, 0.2, 0.1, 0.05, 0.05];
+
+    const percentages = [0.04, 0.245, .325, .35, 0.015, 0.015];
     streamGroups = [];
 
-    for (let j = 0; j < 5; j++) {
+    for (let j = 0; j < 6; j++) {
         let streams = [];
         let streamCountForImage = Math.round(numOfStreams * percentages[j]);
         for (let i = 0; i < streamCountForImage; i++) {

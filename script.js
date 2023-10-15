@@ -10,7 +10,7 @@ function preload() {
     circleDiameter = Math.min(windowWidth, windowHeight);
     let desiredImageHeight = circleDiameter * 2;
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
         loadImage(`images/image${i + 1}.png`, img => {
             let scaleFactor = desiredImageHeight / img.height;
             img.resize(img.width * scaleFactor, img.height * scaleFactor);
@@ -51,13 +51,14 @@ function setup() {
         [27, 18, 18],
         [255, 219, 172],
         [255, 219, 172],
-        [222, 49, 99]
+        [222, 49, 99],
+        [27, 18, 18]
     ];
 
-    const percentages = [0.04, 0.245, .325, .35, 0.015, 0.015];
+    const percentages = [0.04, 0.2, .3, .35, 0.015, 0.015, 0.015];
     streamGroups = [];
 
-    for (let j = 0; j < 6; j++) {
+    for (let j = 0; j < 7; j++) {
         let streams = [];
         let streamCountForImage = Math.round(numOfStreams * percentages[j]);
         for (let i = 0; i < streamCountForImage; i++) {

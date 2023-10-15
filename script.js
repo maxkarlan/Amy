@@ -1,6 +1,6 @@
 let images = [null, null, null, null, null, null];
 const transparencyThreshold = 128;
-const numOfStreams = 2000;
+const numOfStreams = 1500;
 let imgCenter; 
 let pointImageOverlapCache = {};  
 let circleDiameter;
@@ -117,8 +117,6 @@ for (let s of streams) {
 }
 }
 }
-
-
 
 class Stream {
     constructor(color, assignedImageIdx) {

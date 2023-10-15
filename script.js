@@ -1,4 +1,4 @@
-let images = [null, null, null, null, null, null];
+let images = [null, null, null, null, null, null, null, null];
 const transparencyThreshold = 128;
 const numOfStreams = 1500;
 let imgCenter; 
@@ -10,7 +10,7 @@ function preload() {
     circleDiameter = Math.min(windowWidth, windowHeight);
     let desiredImageHeight = circleDiameter * 2;
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
         loadImage(`images/image${i + 1}.png`, img => {
             let scaleFactor = desiredImageHeight / img.height;
             img.resize(img.width * scaleFactor, img.height * scaleFactor);
@@ -52,13 +52,14 @@ function setup() {
         [255, 219, 172],
         [255, 219, 172],
         [222, 49, 99],
+        [222, 49, 99],
         [27, 18, 18]
     ];
 
-    const percentages = [0.04, 0.2, .3, .35, 0.015, 0.015, 0.015];
+    const percentages = [0.13, 0.19, .26, .295, 0.015, 0.02, 0.01, 0.015];
     streamGroups = [];
 
-    for (let j = 0; j < 7; j++) {
+    for (let j = 0; j < 8; j++) {
         let streams = [];
         let streamCountForImage = Math.round(numOfStreams * percentages[j]);
         for (let i = 0; i < streamCountForImage; i++) {
@@ -69,18 +70,19 @@ function setup() {
 }
 
 function isOverAnyImageCached(point) {
-let cacheKey = `${point.x},${point.y}`;
+    let cacheKey = `${point.x},${point.y}`;
 
-// Use the cached result if available
-if (pointImageOverlapCache.hasOwnProperty(cacheKey)) {
-return pointImageOverlapCache[cacheKey];
+    // Use the cached result if available
+    if (pointImageOverlapCache.hasOwnProperty(cacheKey)) {
+        return pointImageOverlapCache[cacheKey];
+    }
+
+    let result = Stream.prototype.isOverAnyImage.call({ isOverImage: Stream.prototype.isOverImage }, point);
+    pointImageOverlapCache[cacheKey] = result;  // Cache the result
+
+    return result;
 }
 
-let result = isOverAnyImage(point);
-pointImageOverlapCache[cacheKey] = result;  // Cache the result
-
-return result;
-}
 
 function draw() {
 
@@ -176,75 +178,78 @@ class Stream {
         return false;
     }
   
-      stayWithinBounds(point) {
-const buffer = 5;  // Small buffer to ensure that the stream doesn't touch the edge
-if (point.x <= buffer || point.x >= width - buffer) {
-this.currentAngle = PI - this.currentAngle;  // Reflect horizontally
-}
-if (point.y <= buffer || point.y >= height - buffer) {
-this.currentAngle = -this.currentAngle;  // Reflect vertically
-}
-}
+    stayWithinBounds(point) {
+        const buffer = 5;  // Small buffer to ensure that the stream doesn't touch the edge
+        if (point.x <= buffer || point.x >= width - buffer) {
+            this.currentAngle = PI - this.currentAngle;  // Reflect horizontally
+        }
+        if (point.y <= buffer || point.y >= height - buffer) {
+            this.currentAngle = -this.currentAngle;  // Reflect vertically
+        }
+    }
+    
 
-update() {
-let lastPoint = this.points[this.points.length - 1];
-let newPoint;
-
-let speed = this.attractMode ? 8 : 8; // Double the speed when attractMode is on
-
-if (this.attractMode) {
-if (this.isOutsideAllImages(lastPoint) || this.insideImage || this.isOverAssignedImage(lastPoint)) {
-    this.currentAngle = this.calculateAngleTowardsImage(lastPoint, this.assignedImageIdx);
-}
-} else {
-if (this.isOverAnyImage(lastPoint)) {
-    // Repulsion mechanism: If point is inside any image, move away from the image center
-    this.currentAngle = this.calculateAngleAwayFromClosestImageCenter(lastPoint);
-}
-}
-
-let angleVariation = map(noise(this.noiseOffset), 0, 1, -PI / 2, PI / 2);
-this.currentAngle += angleVariation;
-
-newPoint = p5.Vector.fromAngle(this.currentAngle).mult(speed).add(lastPoint);  // Using the speed variable here
-
-// If in attractMode and inside assigned image, check if the new point is outside
-if (this.attractMode && this.insideImage && !this.isOverAssignedImage(newPoint)) {
-this.currentAngle += PI; // Flip direction
-newPoint = p5.Vector.fromAngle(this.currentAngle).mult(speed).add(lastPoint); // Using the speed variable here too
-}
-
-this.stayWithinBounds(newPoint);  // Check and adjust for bounds
-
-this.points.push(newPoint);
-this.noiseOffset += 0.1;
-
-if (this.points.length > 100) {
-this.points.shift();
-}
-
-// Update the insideImage flag based on the last point
-this.insideImage = this.isOverAssignedImage(lastPoint);
-}
+    update() {
+        let lastPoint = this.points[this.points.length - 1];
+        let newPoint;
+    
+        let speed = this.attractMode ? 8 : 8; 
+    
+        if (this.attractMode) {
+            if (this.isOutsideAllImages(lastPoint) || this.insideImage) {
+                this.currentAngle = this.calculateAngleTowardsImage(lastPoint, this.assignedImageIdx);
+            }
+        } else {
+            // Only change direction if the point is not inside its assigned image
+            if (!this.isOverAssignedImage(lastPoint) && this.isOverAnyImage(lastPoint)) {
+                this.currentAngle = this.calculateAngleAwayFromClosestImageCenter(lastPoint);
+            }
+        }
+    
+        let angleVariation = map(noise(this.noiseOffset), 0, 1, -PI / 2, PI / 2);
+        this.currentAngle += angleVariation;
+    
+        newPoint = p5.Vector.fromAngle(this.currentAngle).mult(speed).add(lastPoint);
+    
+        if (this.attractMode && this.insideImage && !this.isOverAssignedImage(newPoint)) {
+            this.currentAngle += PI; 
+            newPoint = p5.Vector.fromAngle(this.currentAngle).mult(speed).add(lastPoint);
+        }
+    
+        this.stayWithinBounds(newPoint);
+        this.points.push(newPoint);
+        this.noiseOffset += 0.1;
+    
+        if (this.points.length > 100) {
+            this.points.shift();
+        }
+    
+        this.insideImage = this.isOverAssignedImage(lastPoint);
+    }
 
     calculateAngleAwayFromClosestImageCenter(point) {
         let closestDistance = Infinity;
         let closestImageCenter;
-
-        for (let img of images) {
-            let distance = dist(point.x, point.y, imgCenter.x, imgCenter.y);
-            if (distance < closestDistance && this.isOverImage(point, img)) {
-                closestDistance = distance;
-                closestImageCenter = imgCenter;
+    
+        for (let i = 0; i < images.length; i++) {
+            let img = images[i];
+            // Exclude the assigned image from the repulsion mechanism
+            if (i !== this.assignedImageIdx) {
+                let distance = dist(point.x, point.y, imgCenter.x, imgCenter.y);
+                if (distance < closestDistance && this.isOverImage(point, img)) {
+                    closestDistance = distance;
+                    closestImageCenter = imgCenter;
+                }
             }
         }
-
+    
         if (closestImageCenter) {
             return p5.Vector.sub(point, closestImageCenter).heading();
         }
         
         return random(TWO_PI);
     }
+    
 
     calculateAngleTowardsImage(point, imgIdx) {
         if (this.insideImage) {

@@ -1,6 +1,6 @@
 let images = [null, null, null, null, null, null];
 const transparencyThreshold = 128;
-const numOfStreams = 2500;
+const numOfStreams = 2000;
 let imgCenter; 
 let pointImageOverlapCache = {};  
 let circleDiameter;
